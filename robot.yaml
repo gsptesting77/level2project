@@ -1,6 +1,10 @@
 tasks:
   Run all tasks:
+<<<<<<< HEAD
     shell: python -m robot --report NONE --outputdir output --logtitle "Place Orders" tasks.robot
+=======
+    shell: python -m robot --report NONE --outputdir output --logtitle "Place Order" tasks.robot
+>>>>>>> initial commit
 
 condaConfigFile: conda.yaml
 artifactsDir: output

@@ -1,4 +1,5 @@
 *** Settings ***
+<<<<<<< HEAD
 Documentation        Orders robots from RobotSpareBin Industries Inc.
 ...                  Saves the order HTML receipt as a PDF file.
 ...                  Saves the screenshot of the ordered robot.
@@ -126,3 +127,120 @@ Go to order another robot
 
 Create a ZIP file of the receipts
     Archive Folder With Zip                               ${output_folder}                                                    ${output_folder}${/}Archive.zip                include=*.pdf
+=======
+Documentation          Orders robots from RobotSpareBin Industries Inc.
+...                    Saves the order HTML receipt as a PDF file.
+...                    Saves the screenshot of the ordered robot.
+...                    Embeds the screenshot of the robot to the PDF receipt.
+...                    Creates ZIP archive of the receipts and the images.
+Library                RPA.Browser.Selenium
+Library                RPA.PDF
+Library                RPA.Archive
+Library                RPA.Tables
+Library                RPA.HTTP
+Library                RPA.Dialogs
+Library                RPA.Robocloud.Secrets
+
+*** Variables ***
+${orders_file_url}=    https://robotsparebinindustries.com/orders.csv
+${website_url}=        https://robotsparebinindustries.com/#/robot-order
+
+*** Tasks ***
+Orders robots from RobotSpareBin Industries Inc.
+    Open the robot order website
+    ${order_path}=                                        Collect order location
+    ${orders}=                                            Get orders                                                          ${order_path}
+    FOR                                                   ${order}                                                            IN                                                                               @{orders}
+    Close Modal
+    Fill Form                                             ${order}
+    Preview the Robot
+    Submit the order
+    ${pdf}=                                               Store the receipt as a PDF file                                     ${order}
+    ${screenshot}=                                        Take a screenshot of the robot                                      ${order}
+    Embed the robot screenshot to the receipt PDF file    ${screenshot}                                                       ${pdf}
+    Go to order another robot
+    END
+    Create Zip file of the receipts
+
+*** Keywords ***
+Open the robot order website
+    [Documentation]                                       Open Order Website with Available browser
+    ${website}=                                           Get Secret                                                          website
+    Open Available Browser                                ${website}[site_url]
+
+Get orders
+    [Arguments]                                           ${order_path}
+    Log                                                   Get orders
+    Download                                              ${order_path}                                                       overwrite=True
+    ${orders}=                                            Read table from CSV                                                 orders.csv                                                                       header=True
+    [Return]                                              ${orders}
+
+Close Modal
+    Log                                                   Close Modal
+    Click Element When Visible                            xpath://button[normalize-space()='OK']
+
+Fill Form
+    [Documentation]                                       Fill every fields in the page.
+    [Arguments]                                           ${order}
+    Log                                                   Fill Form
+    Select From List By Value                             id:head                                                             ${order}[Head]
+    Select Radio Button                                   body                                                                ${order}[Body]
+    Input Text                                            xpath://input[@placeholder='Enter the part number for the legs']    ${order}[Legs]
+    Input Text                                            id:address                                                          ${order}[Address]
+
+Preview the Robot
+    [Documentation]                                       Click on Preview Button
+    Log                                                   Get orders
+    Click Button                                          id:preview
+
+Submit the order
+    [Documentation]                                       Click on Order Button
+    Log                                                   Submit the order
+    Wait Until Keyword Succeeds                           10x                                                                 1s                                                                               Assert Order Success
+
+Assert Order Success
+    Click Button                                          id:order
+    Wait Until Element Is Visible                         id:receipt
+
+Store the receipt as a PDF file
+    [Arguments]                                           ${order}
+    Log                                                   Store the receipt as a PDF file
+    Set Local Variable                                    ${OrderNumber}                                                      ${order}[Order number]
+    ${folders}=                                           Get Secret                                                          output_folders
+    ${receipt_html}=                                      Get Element Attribute                                               id:receipt                                                                       outerHTML
+    Set Local Variable                                    ${path_receipt}                                                     ${CURDIR}${/}output${/}${folders}[receipts]${/}OrderNumber_${OrderNumber}.pdf
+    Html To Pdf                                           ${receipt_html}                                                     ${path_receipt}
+    [Return]                                              ${path_receipt}
+
+Take a screenshot of the robot
+    [Arguments]                                           ${order}
+    Log                                                   Take a screenshot of the robot
+    ${folders}=                                           Get Secret                                                          output_folders
+    Set Local Variable                                    ${OrderNumber}                                                      ${order}[Order number]
+    Set Local Variable                                    ${path_screen}                                                      ${CURDIR}${/}output${/}${folders}[images]${/}OrderNumber_${OrderNumber}.png
+    Sleep                                                 2
+    Capture Element Screenshot                            id:robot-preview-image                                              ${path_screen}
+    [Return]                                              ${path_screen}
+
+Embed the robot screenshot to the receipt PDF file
+    [Arguments]                                           ${screenshot}                                                       ${pdf}
+    Add Watermark Image To Pdf                            ${screenshot}                                                       ${pdf}                                                                           ${pdf}
+
+Go to order another robot
+    [Documentation]                                       Click on Order Another Robot Button
+    Click Button                                          id:order-another
+
+Create Zip file of the receipts
+    Archive Folder With Zip                               ${CURDIR}${/}output${/}receipts                                     ${CURDIR}${/}output${/}Archive.zip
+
+Collect order location
+    Add heading                                           Shall we begin placing orders?
+    Add text                                              Let get the orders from ${orders_file_url}                          size=Small
+    Add radio buttons
+    ...                                                   name=order_location
+    ...                                                   options=${orders_file_url},Dummy
+    ...                                                   default=${orders_file_url}
+    ...                                                   label=URL
+    ${result}=                                            Run dialog                                                          title=orders.csv                                                                 height=400              width=480
+    [Return]                                              ${result.order_location}
+>>>>>>> initial commit
