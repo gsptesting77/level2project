@@ -1,16 +1,6 @@
 {
-<<<<<<< HEAD
    "MySecret": {
       "website_url": "https://robotsparebinindustries.com/#/robot-order",
       "orders_csv_url": "https://robotsparebinindustries.com/orders.csv"
    }
-=======
-  "website": {
-    "site_url": "https://robotsparebinindustries.com/#/robot-order"
-  },
-  "output_folders": {
-    "receipts": "receipts",
-    "images": "images"
-  }
->>>>>>> initial commit
 }
