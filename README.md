@@ -10,3 +10,6 @@
 # Output
 ---------------
     Archive.zip - contains all the order receipts
+
+# User Input
+    Just asked User input as a radio button, instead of order url just to minimise the user error and save time during robot creation :)
